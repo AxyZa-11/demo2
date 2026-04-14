@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏蓝盒 - 你的游戏乐园</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f8ff;  /* 淡蓝背景 */
+            color: #0a2f4d;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1e88e5;
+        }
+        .logo span {
+            color: #0d47a1;
+        }
+        .nav-links a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .nav-links a:hover {
+            color: #1e88e5;
+        }
+
+        /* 主容器：左侧社区 + 中间内容 */
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            gap: 1.5rem;
+        }
+
+        /* 左侧社区小方格 */
+        .community-box {
+            width: 280px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 1.2rem;
+            height: fit-content;
+            border: 1px solid #e1f0fa;
+        }
+        .community-header {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #0a5b8c;
+            border-left: 4px solid #1e88e5;
+            padding-left: 0.6rem;
+            margin-bottom: 1rem;
+        }
+        .post-form textarea {
+            width: 100%;
+            border: 1px solid #cce7f5;
+            border-radius: 12px;
+            padding: 0.6rem;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 0.5rem;
+        }
+        .post-form input {
+            width: 100%;
+            border: 1px solid #cce7f5;
+            border-radius: 12px;
+            padding: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .post-form button {
+            background: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+        .community-posts {
+            margin-top: 1.5rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .post-card {
+            background: #f9fdff;
+            border-radius: 14px;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 1px solid #d4e9f5;
+        }
+        .post-content {
+            margin-bottom: 0.4rem;
+            word-break: break-word;
+        }
+        .post-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 0.5rem;
+        }
+        .post-time {
+            font-size: 0.7rem;
+            color: #6c8ea0;
+            margin-top: 0.4rem;
+        }
+
+        /* 中间游戏列表区域 */
+        .games-area {
+            flex: 1;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        .games-header {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.2rem;
+        }
+        .game-card {
+            background: #ffffff;
+            border-radius: 18px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e9f2f9;
+        }
+        .game-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+        }
+        .game-icon {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            background: #eef5fc;
+        }
+        .game-info {
+            padding: 0.8rem;
+        }
+        .game-name {
+            font-weight: bold;
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .price-row {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+        .old-price {
+            text-decoration: line-through;
+            color: #8f9aa8;
+            font-size: 0.8rem;
+        }
+        .new-price {
+            color: #1e88e5;
+            font-weight: bold;
+        }
+        .discount-badge {
+            background: #ff7c60;
+            color: white;
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #5f8ab6;
+        }
+
+        /* 详情页模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            max-width: 700px;
+            width: 90%;
+            border-radius: 28px;
+            padding: 1.5rem;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 0.8rem;
+        }
+        .close-modal {
+            font-size: 1.6rem;
+            cursor: pointer;
+        }
+        .game-detail-image {
+            width: 100%;
+            border-radius: 20px;
+            margin: 1rem 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: #5f8ab6;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 800px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .community-box {
+                width: auto;
+                order: 2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">游戏<span>蓝盒</span></div>
+        <div class="nav-links">
+            <a href="#" data-page="home">首页</a>
+            <a href="#" data-page="specials">游戏优惠</a>
+            <a href="#" data-page="community">社区</a>
+        </div>
+    </div>
+
+    <div class="main-container" id="mainContainer">
+        <!-- 左侧社区小方格 -->
+        <div class="community-box" id="communitySidebar">
+            <div class="community-header">✨ 玩家社区</div>
+            <div class="post-form">
+                <textarea id="postText" rows="2" placeholder="分享你的游戏心情..."></textarea>
+                <input type="text" id="postImageUrl" placeholder="图片链接 (可选)">
+                <button id="publishBtn">📝 发布</button>
+            </div>
+            <div class="community-posts" id="postList">
+                <div class="post-card">🎉 欢迎来到游戏蓝盒社区！分享你的快乐~</div>
+            </div>
+        </div>
+
+        <!-- 中间主内容区（游戏列表） -->
+        <div class="games-area" id="gamesArea">
+            <div class="games-header">
+                <span>🔥 限时特惠</span>
+                <span style="font-size: 0.8rem;">点击卡片查看详情</span>
+            </div>
+            <div id="gamesGrid" class="games-grid">
+                <div class="loading">加载精彩特惠中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏详情模态框 -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">游戏详情</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div id="modalBody">加载中...</div>
+        </div>
+    </div>
+
+    <footer>© 游戏蓝盒 | 数据来源 Steam 特卖</footer>
+
+    <script>
+        // ---------- 全局变量 ----------
+        // 动态设置 API 基础 URL，适应 Railway 部署环境
+        const API_BASE = window.location.origin + '/api';
+        let gamesData = [];
+
+        // 社区存储 (localStorage)
+        let posts = [];
+        function loadPostsFromStorage() {
+            const stored = localStorage.getItem('gamehub_posts');
+            if (stored) {
+                posts = JSON.parse(stored);
+            } else {
+                // 示例初始帖子
+                posts = [
+                    { text: "刚入手了《双人成行》，打折超值！", image: "", time: new Date().toLocaleString() },
+                    { text: "有没有一起玩CS2的？", image: "https://steamcdn-a.akamaihd.net/steam/apps/730/header.jpg", time: new Date().toLocaleString() }
+                ];
+                savePosts();
+            }
+            renderPosts();
+        }
+        function savePosts() {
+            localStorage.setItem('gamehub_posts', JSON.stringify(posts));
+        }
+        function renderPosts() {
+            const container = document.getElementById('postList');
+            if (!container) return;
+            if (posts.length === 0) {
+                container.innerHTML = '<div class="post-card">暂无帖子，成为第一个发布者吧～</div>';
+                return;
+            }
+            let html = '';
+            for (let i = posts.length-1; i >= 0; i--) { // 倒序显示最新在上
+                const p = posts[i];
+                html += `<div class="post-card">
+                            <div class="post-content">${escapeHtml(p.text)}</div>
+                            ${p.image ? `<img class="post-image" src="${escapeHtml(p.image)}" alt="分享图片" loading="lazy">` : ''}
+                            <div class="post-time">${escapeHtml(p.time)}</div>
+                         </div>`;
+            }
+            container.innerHTML = html;
+        }
+        function addPost(text, imageUrl) {
+            if (!text.trim()) return alert("请填写文字内容");
+            posts.push({
+                text: text.trim(),
+                image: imageUrl.trim(),
+                time: new Date().toLocaleString()
+            });
+            savePosts();
+            renderPosts();
+            document.getElementById('postText').value = '';
+            document.getElementById('postImageUrl').value = '';
+        }
+
+        // 辅助函数
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // 获取游戏列表
+        async function fetchSpecials() {
+            try {
+                const resp = await fetch(`${API_BASE}/specials`);
+                const json = await resp.json();
+                if (json.code === 200) {
+                    gamesData = json.data;
+                    renderGameList(gamesData);
+                } else {
+                    document.getElementById('gamesGrid').innerHTML = '<div class="loading">暂无特惠游戏，请稍后重试</div>';
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('gamesGrid').innerHTML = '<div class="loading">网络错误，请确保后端已启动 (python app.py)</div>';
+            }
+        }
+
+        function renderGameList(games) {
+            const grid = document.getElementById('gamesGrid');
+            if (!games || games.length === 0) {
+                grid.innerHTML = '<div class="loading">没有找到特卖游戏</div>';
+                return;
+            }
+            let html = '';
+            for (let game of games) {
+                const icon = game.icon || `https://steamcdn-a.akamaihd.net/steam/apps/${game.app_id}/capsule_sm_120.jpg`;
+                const oldPrice = game.price_original || '原价未知';
+                const newPrice = game.price_final || '特价';
+                const discount = game.discount_percent || 0;
+                html += `
+                    <div class="game-card" data-appid="${game.app_id}">
+                        <img class="game-icon" src="${icon}" alt="${game.name}" onerror="this.src='https://store.steampowered.com/favicon.ico'">
+                        <div class="game-info">
+                            <div class="game-name">${escapeHtml(game.name)}</div>
+                            <div class="price-row">
+                                <span class="old-price">${escapeHtml(oldPrice)}</span>
+                                <span class="new-price">${escapeHtml(newPrice)}</span>
+                                ${discount > 0 ? `<span class="discount-badge">-${discount}%</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+            // 绑定卡片点击事件
+            document.querySelectorAll('.game-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const appid = card.getAttribute('data-appid');
+                    showGameDetail(appid);
+                });
+            });
+        }
+
+        // 显示游戏详情（模态框）
+        async function showGameDetail(appid) {
+            const modal = document.getElementById('detailModal');
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = '加载详情中...';
+            modal.style.display = 'flex';
+            try {
+                const resp = await fetch(`${API_BASE}/game/${appid}`);
+                const json = await resp.json();
+                if (json.code === 200 && json.data) {
+                    const g = json.data;
+                    const headerImg = g.header_image || `https://steamcdn-a.akamaihd.net/steam/apps/${appid}/header.jpg`;
+                    const genres = g.genres ? g.genres.join(' · ') : '未分类';
+                    const dev = g.developers ? g.developers.join(', ') : '未知';
+                    const pub = g.publishers ? g.publishers.join(', ') : '未知';
+                    modalBody.innerHTML = `
+                        <img class="game-detail-image" src="${headerImg}" onerror="this.style.display='none'">
+                        <h3>${escapeHtml(g.name)}</h3>
+                        <p><strong>发行商：</strong> ${escapeHtml(pub)}</p>
+                        <p><strong>开发商：</strong> ${escapeHtml(dev)}</p>
+                        <p><strong>类型：</strong> ${escapeHtml(genres)}</p>
+                        <p><strong>发售日：</strong> ${escapeHtml(g.release_date) || '待定'}</p>
+                        <div class="price-row">
+                            <span class="old-price">${escapeHtml(g.price_original)}</span>
+                            <span class="new-price">${escapeHtml(g.price_final)}</span>
+                            ${g.discount_percent > 0 ? `<span class="discount-badge">-${g.discount_percent}%</span>` : ''}
+                        </div>
+                        <p style="margin-top:1rem;"><strong>简介：</strong><br>${escapeHtml(g.description)}</p>
+                    `;
+                    document.getElementById('modalTitle').innerText = g.name;
+                } else {
+                    modalBody.innerHTML = '<p>未找到游戏详情</p>';
+                }
+            } catch (err) {
+                modalBody.innerHTML = '<p>加载失败，请检查后端</p>';
+                console.error(err);
+            }
+        }
+
+        // 模态框关闭
+        function closeModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        // 导航切换 (简单实现，主要是展示不同区块)
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = link.getAttribute('data-page');
+                if (page === 'home' || page === 'specials') {
+                    // 确保显示游戏列表和社区
+                    document.getElementById('mainContainer').style.display = 'flex';
+                    // 滚动到游戏区
+                    document.getElementById('gamesArea').scrollIntoView({ behavior: 'smooth' });
+                } else if (page === 'community') {
+                    document.getElementById('communitySidebar').scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // 初始化
+        window.onload = () => {
+            fetchSpecials();
+            loadPostsFromStorage();
+            // 发布按钮
+            document.getElementById('publishBtn').addEventListener('click', () => {
+                const text = document.getElementById('postText').value;
+                const imgUrl = document.getElementById('postImageUrl').value;
+                addPost(text, imgUrl);
+            });
+            // 模态框关闭事件
+            const modal = document.getElementById('detailModal');
+            modal.querySelector('.close-modal').addEventListener('click', closeModal);
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+        };
+    </script>
+</body>
+</html>
